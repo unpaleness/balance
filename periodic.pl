@@ -5,9 +5,21 @@ use warnings;
 
 use SCS::DataBase;
 
+my $selected = $ARGV[0];
+
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
 my $color_zero = ' bgcolor="#ffff88"';
+my $period = {
+    weekly => {
+        sql   => "CONCAT_WS(' - ', r.date - INTERVAL WEEKDAY(r.date) DAY, r.date + INTERVAL 6 - WEEKDAY(r.date) DAY)",
+        label => 'Weekly',
+    },
+    daily => {
+        sql   => 'r.date',
+        label => 'Daily',
+    },
+};
 
 my $base = SCS::DataBase->connect();
 my $query = $base->prepare( 'SELECT DISTINCT storage FROM records ORDER BY 1' );
@@ -23,13 +35,14 @@ while ( my $row = $query->fetchrow_hashref() ) {
 $diffs->{total} = 0;
 $totals->{total} = 0;
 
-$query = $base->prepare( qq{
-    SELECT r.date AS period, r.type, r.title, r.storage, r.value
+$query = $base->prepare( qq|
+    SELECT $period->{$selected}->{sql} AS period,
+    r.type, r.title, r.storage, r.value
     FROM records AS r
     ORDER BY date, id
-} );
+| );
 $query->execute();
-my $table = '<table>';
+my $table = '<table align="center">';
 my @titles = ( 'period', 'type', 'title', @storages, 'diff', 'total' );
 my $data = {};
 while ( my $row = $query->fetchrow_hashref() ) {
@@ -38,9 +51,15 @@ while ( my $row = $query->fetchrow_hashref() ) {
     my $title   = $row->{title};
     my $storage = $row->{storage};
     my $value   = $row->{value};
-    $data->{$period} = {} if !defined $data->{$period};
+    if (!defined $data->{$period}) {
+        $data->{$period} = {}; 
+        $data->{$period}->{n} = 0;
+    }
     $data->{$period}->{$type} = {} if !defined $data->{$period}->{$type};
-    $data->{$period}->{$type}->{$title} = {} if !defined $data->{$period}->{$type}->{$title};
+    if (!defined $data->{$period}->{$type}->{$title}) {
+        $data->{$period}->{$type}->{$title} = {};
+        ++$data->{$period}->{n};
+    }
     $data->{$period}->{$type}->{$title}->{total} = 0 if !defined $data->{$period}->{$type}->{$title}->{total};
     $data->{$period}->{$type}->{$title}->{$storage} = 0 if !defined $data->{$period}->{$type}->{$title}->{$storage};
     $data->{$period}->{$type}->{$title}->{$storage} += $value;
@@ -55,7 +74,7 @@ foreach my $title ( @titles ) {
 }
 $table .= "<tr>$head</tr>";
 
-my $table_row = '<td><b>Total</b></td><td></td><td></td>';
+my $table_row = '<td colspan="3" align="center"><b>Total</b></td>';
 foreach my $storage ( @storages ) {
     my $val = $totals->{$storage};
     my $color = $val > 0 ? $color_positive : $val < 0 ? $color_negative : '';
@@ -67,9 +86,12 @@ $table_row .= '<td></td><td' . $color . '><b>' . sprintf("%.2f", $val) . '</b></
 $table .= "<tr>$table_row</tr>";
 
 foreach my $period ( sort keys %{ $data } ) {
+    my $n = 0;
+    my $n_records = $data->{$period}->{n};
     foreach my $type ( sort keys %{ $data->{$period} } ) {
+        next if $type eq 'n';
         foreach my $title ( sort keys %{ $data->{$period}->{$type} } ) {
-            my $table_row .= "<td>$period</td><td>$type</td><td>$title</td>";
+            my $table_row .= ( $n == 0 ? "<td rowspan=\"$n_records\">$period</td>" : '' ) . "<td>$type</td><td>$title</td>";
             my $record = $data->{$period}->{$type}->{$title};
             my $diff = 0;
             foreach my $storage ( @storages ) {
@@ -89,23 +111,31 @@ foreach my $period ( sort keys %{ $data } ) {
             my $val = $diffs->{total};
             $color = $val > 0 ? $color_positive : $val < 0 ? $color_negative : '';
             $table_row .= '<td' . $color . '><b>' . sprintf("%.2f", $val) . '</b></td>';
-            $table .= "<tr>$table_row</tr>";
+            $table .= '<tr' . ( $n == 0 ? ' class="border_top"' : '' ) . ">$table_row</tr>";
+            ++$n;
         }
     }
 }
 
 $table .= '</table>';
 
-my $sample = qq{
+my $sample = qq|
 <!DOCTYPE html>
 <html>
-    <head><title>Balance</title></head>
+    <head>
+        <title>Balance</title>
+        <style type="text/css">
+            tr.border_top td {
+                border-top:1pt solid black;
+            }
+        </style>
+    </head>
     <body>
-        <h2>Detailed balance</h2>
+        <h2 align="center">$period->{$selected}->{label} costs</h2>
         <div><font size="1">$table</font></div>
     </body>
 </html>
-};
+|;
 
 print "Content-Type: text/html\n";
 print $sample;

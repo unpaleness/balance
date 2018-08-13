@@ -16,7 +16,7 @@ my $query = $base->prepare( qq{
     ORDER BY 1, 2
 } );
 $query->execute();
-my $table = '<table>';
+my $table = '<table align="center">';
 my $titles = undef;
 my @titles = ();
 my $total = {};
@@ -66,7 +66,7 @@ my $sample = qq{
 <html>
     <head><title>Balance</title></head>
     <body>
-        <h2>Detailed balance</h2>
+        <h2 align="center">Detailed balance</h2>
         <div><font size="1">$table</font></div>
     </body>
 </html>
