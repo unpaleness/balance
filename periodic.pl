@@ -5,12 +5,20 @@ use warnings;
 
 use SCS::DataBase;
 
-my $selected = $ARGV[0];
+my $selected = $ARGV[0] || 'daily';
 
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
 my $color_zero = ' bgcolor="#ffff88"';
 my $period = {
+    annually => {
+        sql   => "DATE_FORMAT(r.date, '%Y')",
+        label => 'Annually',
+    },
+    monthly => {
+        sql   => "DATE_FORMAT(r.date, '%Y-%m')",
+        label => 'Monthly',
+    },
     weekly => {
         sql   => "CONCAT_WS(' - ', r.date - INTERVAL WEEKDAY(r.date) DAY, r.date + INTERVAL 6 - WEEKDAY(r.date) DAY)",
         label => 'Weekly',
@@ -54,6 +62,7 @@ while ( my $row = $query->fetchrow_hashref() ) {
     if (!defined $data->{$period}) {
         $data->{$period} = {}; 
         $data->{$period}->{n} = 0;
+        $data->{$period}->{total} = 0;
     }
     $data->{$period}->{$type} = {} if !defined $data->{$period}->{$type};
     if (!defined $data->{$period}->{$type}->{$title}) {
@@ -66,6 +75,7 @@ while ( my $row = $query->fetchrow_hashref() ) {
     $totals->{$storage} += $value;
     $totals->{total} += $value;
     $data->{$period}->{$type}->{$title}->{total} += $value;
+    $data->{$period}->{total} += $value;
 }
 
 my $head = '';
@@ -74,7 +84,7 @@ foreach my $title ( @titles ) {
 }
 $table .= "<tr>$head</tr>";
 
-my $table_row = '<td colspan="3" align="center"><b>Total</b></td>';
+my $table_row = '<td colspan="3" align="center"><b>Total now</b></td>';
 foreach my $storage ( @storages ) {
     my $val = $totals->{$storage};
     my $color = $val > 0 ? $color_positive : $val < 0 ? $color_negative : '';
@@ -90,6 +100,7 @@ foreach my $period ( sort keys %{ $data } ) {
     my $n_records = $data->{$period}->{n};
     foreach my $type ( sort keys %{ $data->{$period} } ) {
         next if $type eq 'n';
+        next if $type eq 'total';
         foreach my $title ( sort keys %{ $data->{$period}->{$type} } ) {
             my $table_row .= ( $n == 0 ? "<td rowspan=\"$n_records\">$period</td>" : '' ) . "<td>$type</td><td>$title</td>";
             my $record = $data->{$period}->{$type}->{$title};
@@ -108,9 +119,11 @@ foreach my $period ( sort keys %{ $data } ) {
             $diffs->{total} += $record->{total};
             my $color = $diff > 0 ? $color_positive : $diff < 0 ? $color_negative : '';
             $table_row .= '<td' . $color . '><b>' . ( $diff ? sprintf("%.2f", $diff) : '' ) . '</b></td>';
-            my $val = $diffs->{total};
-            $color = $val > 0 ? $color_positive : $val < 0 ? $color_negative : '';
-            $table_row .= '<td' . $color . '><b>' . sprintf("%.2f", $val) . '</b></td>';
+            if ( $n == 0 ) {
+                my $val = $data->{$period}->{total};
+                $color = $val > 0 ? $color_positive : $val < 0 ? $color_negative : '';
+                $table_row .= '<td rowspan="' . $n_records . '" ' . $color . '><b>' . sprintf("%.2f", $val) . '</b></td>';
+            }
             $table .= '<tr' . ( $n == 0 ? ' class="border_top"' : '' ) . ">$table_row</tr>";
             ++$n;
         }
