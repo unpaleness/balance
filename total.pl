@@ -20,11 +20,11 @@ $table .= "<tr>$head</tr>";
 my $sum = 0;
 while ( my $row = $query->fetchrow_hashref() ) {
     $sum += $row->{balance};
-    my $table_row = '<td>' . ( $row->{balance} ? sprintf("%.2f", $row->{balance}) : '' ) . '</td>';
-    $table_row .= "<td>$row->{storage}</td>";
+    my $table_row = "<td>$row->{storage}</td>";
+    $table_row .= '<td>' . ( $row->{balance} ? sprintf("%.2f", $row->{balance}) : '' ) . '</td>';
     $table .= "<tr>$table_row</tr>";
 }
-$table .= '<tr><td><b>' . sprintf("%.2f", $sum) . '</b></td><td><b>Total</b></td></tr>'
+$table .= '<tr><td><b>Total</b></td><td><b>' . sprintf("%.2f", $sum) . '</b></td></tr>'
 ;
 $table .= '</table>';
 
