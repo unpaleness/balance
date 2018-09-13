@@ -47,7 +47,7 @@ $query = $base->prepare( qq|
     SELECT $period->{$selected}->{sql} AS period,
     r.type, r.title, r.storage, r.value
     FROM records AS r
-    ORDER BY date, id
+    ORDER BY 1
 | );
 $query->execute();
 my $table = '<table align="center">';
@@ -102,7 +102,7 @@ foreach my $period ( sort keys %{ $data } ) {
         next if $type eq 'n';
         next if $type eq 'total';
         foreach my $title ( sort keys %{ $data->{$period}->{$type} } ) {
-            my $table_row .= ( $n == 0 ? "<td rowspan=\"$n_records\">$period</td>" : '' ) . "<td>$type</td><td>$title</td>";
+            my $table_row = ( $n == 0 ? "<td rowspan=\"$n_records\">$period</td>" : '' ) . "<td>$type</td><td>$title</td>";
             my $record = $data->{$period}->{$type}->{$title};
             my $diff = 0;
             foreach my $storage ( @storages ) {
