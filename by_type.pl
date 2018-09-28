@@ -5,7 +5,7 @@ use warnings;
 
 use SCS::DataBase;
 
-my $selected = $ARGV[0] || 'daily';
+my $selected = $ARGV[0] || 'monthly';
 
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
