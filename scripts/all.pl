@@ -10,7 +10,7 @@ my $color_negative = ' bgcolor="#ff8888"';
 my $color_zero = ' bgcolor="#ffff88"';
 
 my $base = SCS::DataBase->connect();
-my $query = $base->prepare( 'SELECT DISTINCT storage FROM records ORDER BY 1' );
+my $query = $base->prepare( "SELECT DISTINCT storage FROM records WHERE owner = 'Egor' ORDER BY 1" );
 $query->execute();
 my @storages = ();
 my $diffs = {};
@@ -26,6 +26,7 @@ $totals->{total} = 0;
 $query = $base->prepare( qq|
     SELECT r.id, r.date, r.type, r.title, r.storage, r.value
     FROM records AS r
+    WHERE owner = 'Egor'
     ORDER BY 2, 1
 | );
 $query->execute();

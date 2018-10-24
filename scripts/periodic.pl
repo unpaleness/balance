@@ -30,7 +30,7 @@ my $period = {
 };
 
 my $base = SCS::DataBase->connect();
-my $query = $base->prepare( 'SELECT DISTINCT storage FROM records ORDER BY 1' );
+my $query = $base->prepare( "SELECT DISTINCT storage FROM records WHERE owner = 'Egor' ORDER BY 1" );
 $query->execute();
 my @storages = ();
 my $diffs = {};
@@ -47,6 +47,7 @@ $query = $base->prepare( qq|
     SELECT $period->{$selected}->{sql} AS period,
     r.type, r.title, r.storage, r.value
     FROM records AS r
+    WHERE owner = 'Egor'
     ORDER BY 1
 | );
 $query->execute();

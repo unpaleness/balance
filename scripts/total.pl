@@ -11,6 +11,7 @@ my $query = $base->prepare( qq{
         r1.storage AS storage,
         SUM(r1.value) AS balance
     FROM records AS r1
+    WHERE owner = 'Egor'
     GROUP BY 1
 } );
 $query->execute();

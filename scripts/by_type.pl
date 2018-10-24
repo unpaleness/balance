@@ -30,7 +30,7 @@ my $period = {
 };
 
 my $base = SCS::DataBase->connect();
-my $query = $base->prepare( 'SELECT DISTINCT type FROM records ORDER BY 1' );
+my $query = $base->prepare( "SELECT DISTINCT type FROM records WHERE owner = 'Egor' ORDER BY 1" );
 $query->execute();
 my @types = ();
 my $totals = {};
@@ -43,6 +43,7 @@ $query = $base->prepare( qq|
     SELECT $period->{$selected}->{sql} AS period,
     r.type, SUM(r.value) AS value
     FROM records AS r
+    WHERE owner = 'Egor'
     GROUP BY 1,2
     ORDER BY 1,2
 | );

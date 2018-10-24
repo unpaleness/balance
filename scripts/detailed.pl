@@ -51,6 +51,7 @@ my $query = $base->prepare( qq|
         r.title,
         SUM(r.value) AS diff
     FROM records AS r
+    WHERE owner = 'Egor'
     GROUP BY 1, 2
     ORDER BY 1, 2
 | );
