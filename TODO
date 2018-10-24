@@ -1,0 +1,6 @@
+detailed.pl:
+ - fix zero records
+
+*.pl:
+ - implement owner selection
+
