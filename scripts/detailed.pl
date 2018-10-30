@@ -3,9 +3,12 @@
 use strict;
 use warnings;
 
+use CGI;
 use SCS::DataBase;
 
-my $selected = $ARGV[0] || 'monthly';
+my $cgi = CGI->new;
+my $selected = $cgi->param('period') || 'monthly';
+my $owner = $cgi->param('owner') || '.*';
 
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
@@ -51,7 +54,7 @@ my $query = $base->prepare( qq|
         r.title,
         SUM(r.value) AS diff
     FROM records AS r
-    WHERE owner = 'Egor'
+    WHERE owner REGEXP '^$owner\$'
     GROUP BY 1, 2
     ORDER BY 1, 2
 | );

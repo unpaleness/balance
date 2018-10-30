@@ -3,9 +3,12 @@
 use strict;
 use warnings;
 
+use CGI;
 use SCS::DataBase;
 
-my $selected = $ARGV[0] || 'monthly';
+my $cgi = CGI->new;
+my $selected = $cgi->param('period') || 'monthly';
+my $owner = $cgi->param('owner') || '.*';
 
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
@@ -30,7 +33,7 @@ my $period = {
 };
 
 my $base = SCS::DataBase->connect();
-my $query = $base->prepare( "SELECT DISTINCT type FROM records WHERE owner = 'Egor' ORDER BY 1" );
+my $query = $base->prepare( "SELECT DISTINCT type FROM records WHERE owner REGEXP '^$owner\$' ORDER BY 1" );
 $query->execute();
 my @types = ();
 my $totals = {};
@@ -43,7 +46,7 @@ $query = $base->prepare( qq|
     SELECT $period->{$selected}->{sql} AS period,
     r.type, SUM(r.value) AS value
     FROM records AS r
-    WHERE owner = 'Egor'
+    WHERE owner REGEXP '^$owner\$'
     GROUP BY 1,2
     ORDER BY 1,2
 | );

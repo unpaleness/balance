@@ -3,7 +3,11 @@
 use strict;
 use warnings;
 
+use CGI;
 use SCS::DataBase;
+
+my $cgi = CGI->new;
+my $owner = $cgi->param('owner') || '.*';
 
 my $base = SCS::DataBase->connect();
 my $query = $base->prepare( qq{
@@ -11,7 +15,7 @@ my $query = $base->prepare( qq{
         r1.storage AS storage,
         SUM(r1.value) AS balance
     FROM records AS r1
-    WHERE owner = 'Egor'
+    WHERE owner REGEXP '^$owner\$'
     GROUP BY 1
 } );
 $query->execute();

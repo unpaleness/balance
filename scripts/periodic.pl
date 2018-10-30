@@ -3,9 +3,12 @@
 use strict;
 use warnings;
 
+use CGI;
 use SCS::DataBase;
 
-my $selected = $ARGV[0] || 'daily';
+my $cgi = CGI->new;
+my $selected = $cgi->param('period') || 'daily';
+my $owner = $cgi->param('owner') || '.*';
 
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
@@ -30,7 +33,7 @@ my $period = {
 };
 
 my $base = SCS::DataBase->connect();
-my $query = $base->prepare( "SELECT DISTINCT storage FROM records WHERE owner = 'Egor' ORDER BY 1" );
+my $query = $base->prepare( "SELECT DISTINCT storage FROM records WHERE owner REGEXP '^$owner\$' ORDER BY 1" );
 $query->execute();
 my @storages = ();
 my $diffs = {};
@@ -47,7 +50,7 @@ $query = $base->prepare( qq|
     SELECT $period->{$selected}->{sql} AS period,
     r.type, r.title, r.storage, r.value
     FROM records AS r
-    WHERE owner = 'Egor'
+    WHERE owner REGEXP '^$owner\$'
     ORDER BY 1
 | );
 $query->execute();

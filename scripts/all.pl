@@ -3,14 +3,18 @@
 use strict;
 use warnings;
 
+use CGI;
 use SCS::DataBase;
+
+my $cgi = CGI->new;
+my $owner = $cgi->param('owner') || '.*';
 
 my $color_positive = ' bgcolor="#88ff88"';
 my $color_negative = ' bgcolor="#ff8888"';
 my $color_zero = ' bgcolor="#ffff88"';
 
 my $base = SCS::DataBase->connect();
-my $query = $base->prepare( "SELECT DISTINCT storage FROM records WHERE owner = 'Egor' ORDER BY 1" );
+my $query = $base->prepare( "SELECT DISTINCT storage FROM records WHERE owner REGEXP '^$owner\$' ORDER BY 1" );
 $query->execute();
 my @storages = ();
 my $diffs = {};
@@ -26,7 +30,7 @@ $totals->{total} = 0;
 $query = $base->prepare( qq|
     SELECT r.id, r.date, r.type, r.title, r.storage, r.value
     FROM records AS r
-    WHERE owner = 'Egor'
+    WHERE owner REGEXP '^$owner\$'
     ORDER BY 2, 1
 | );
 $query->execute();
