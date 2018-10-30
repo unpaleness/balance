@@ -1,6 +1,3 @@
 detailed.pl:
- - fix zero records
-
-*.pl:
- - implement owner selection
+ - fix empty rows in case of total zero row sum
 

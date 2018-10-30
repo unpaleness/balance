@@ -110,7 +110,7 @@ foreach my $period ( sort keys %{ $data } ) {
             my $record = $data->{$period}->{$type}->{$title};
             my $diff = 0;
             foreach my $storage ( @storages ) {
-                if ( defined $record->{$storage} ) {
+                if ( defined $record->{$storage} && $record->{$storage} != 0 ) {
                     my $val = $record->{$storage};
                     my $color = $val > 0 ? $color_positive : $val < 0 ? $color_negative : '';
                     $table_row .= '<td' . $color . '>' . sprintf("%.2f", $val) . '</td>';
