@@ -25,4 +25,3 @@ START TRANSACTION;
     LEFT JOIN titles AS ti ON ti.name = r.title
     ORDER BY 1;
 COMMIT;
-

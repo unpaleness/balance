@@ -3,7 +3,7 @@ START TRANSACTION;
 	-- CREATE DATABASE IF NOT EXISTS u489214;
 
 	-- ALTER DATABASE u489214 CHARACTER SET utf8 COLLATE utf8_unicode_ci;
-    
+
     CREATE TABLE owners (
         id INT NOT NULL AUTO_INCREMENT,
         name TEXT NOT NULL,
@@ -43,4 +43,3 @@ START TRANSACTION;
         FOREIGN KEY (storage_id) REFERENCES storages (id)
 	);
 COMMIT;
-
